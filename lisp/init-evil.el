@@ -3,7 +3,7 @@
 ;; My frequently used commands are listed here
 
 ;; enable evil-mode
-(evil-mode 1)
+(evil-mode 0)
 
 (defvar my-use-m-for-matchit nil
   "If t, use \"m\" key for `evil-matchit-mode'.
