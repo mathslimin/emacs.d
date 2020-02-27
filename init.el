@@ -166,6 +166,6 @@
 ;;; no-byte-compile: t
 ;;; End:
 (put 'erase-buffer 'disabled nil)
-(add-to-list 'load-path "~/go-mode.el")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/go-mode.el")
 (autoload 'go-mode "go-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode))
