@@ -16,4 +16,9 @@
 (defvaralias 'web-mode-code-indent-offset 'tab-width)
 (defvaralias 'css-indent-offset 'tab-width)
 
-
+;(load-theme 'granger t)
+;(load-theme 'molokai t)
+(load-theme 'spacemacs-dark t)
+(add-auto-mode 'rjsx-mode "\\.jsx\\'")
+(add-auto-mode 'rjsx-mode "\\.js\\'")
+(add-auto-mode 'typescript-mode "\\.tsx\\'")
