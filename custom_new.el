@@ -40,7 +40,7 @@
 (load-theme 'vscode-dark-plus t)
 (add-auto-mode 'rjsx-mode "\\.jsx\\'")
 (add-auto-mode 'rjsx-mode "\\.js\\'")
-(add-auto-mode 'typescript-mode "\\.tsx\\'")
+(add-auto-mode 'web-mode "\\.tsx\\'")
 
 ;ctags start
 (local-require 'counsel-etags)
@@ -50,6 +50,8 @@
   (unless (is-buffer-file-temp)
         (add-hook 'after-save-hook 'counsel-etags-virtual-update-tags 'append 'local)))
 (add-hook 'prog-mode-hook 'my-setup-develop-environment)
+(global-set-key (kbd "C-]") 'counsel-etags-find-tag-at-point)
+
 ;ctags end
 
 ;lsp-mode run `M-x lsp` to start lsp client and server
