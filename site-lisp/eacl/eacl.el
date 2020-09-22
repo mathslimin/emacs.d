@@ -1,12 +1,12 @@
-;;; eacl.el --- Auto-complete line(s) by grepping project
+;;; eacl.el --- Auto-complete lines by grepping project
 
 ;; Copyright (C) 2017, 2018 Chen Bin
 ;;
-;; Version: 2.0.1
+;; Version: 2.0.3
 
 ;; Author: Chen Bin <chenbin DOT sh AT gmail DOT com>
 ;; URL: http://github.com/redguardtoo/eacl
-;; Package-Requires: ((emacs "24.3") (ivy "0.9.1"))
+;; Package-Requires: ((emacs "24.4") (ivy "0.9.1"))
 ;; Keywords: abbrev, convenience, matching
 
 ;; This file is not part of GNU Emacs.
@@ -40,20 +40,19 @@
 ;;
 ;; Modify `grep-find-ignored-directories' and `grep-find-ignored-files'
 ;; to setup directories and files grep should ignore:
-;;   (eval-after-load 'grep
-;;     '(progn
-;;        (dolist (v '("node_modules"
-;;                     "bower_components"
-;;                     ".sass_cache"
-;;                     ".cache"
-;;                     ".npm"))
-;;          (add-to-list 'grep-find-ignored-directories v))
-;;        (dolist (v '("*.min.js"
-;;                     "*.bundle.js"
-;;                     "*.min.css"
-;;                     "*.json"
-;;                     "*.log"))
-;;          (add-to-list 'grep-find-ignored-files v))))
+;;   (with-eval-after-load 'grep
+;;      (dolist (v '("node_modules"
+;;                   "bower_components"
+;;                   ".sass_cache"
+;;                   ".cache"
+;;                   ".npm"))
+;;        (add-to-list 'grep-find-ignored-directories v))
+;;      (dolist (v '("*.min.js"
+;;                   "*.bundle.js"
+;;                   "*.min.css"
+;;                   "*.json"
+;;                   "*.log"))
+;;        (add-to-list 'grep-find-ignored-files v)))
 ;;
 ;; Or you can setup above ignore options in ".dir-locals.el".
 ;; The content of ".dir-locals.el":
@@ -71,11 +70,14 @@
 ;;                                   "*.log"))
 ;;                        (add-to-list 'grep-find-ignored-files v)))))))
 ;;
-;; "git grep" is automatically detected for single line completion.
+;; "git grep" is automatically used for grepping in git repository.
+;; Please note "git grep" does NOT use `grep-find-ignored-directories' OR
+;; `grep-find-ignored-files'. You could set `eacl-git-grep-untracked' to tell
+;; git whether untracked files should be grepped in the repository.
 
 
 ;;; Code:
-(require 'ivy)
+(require 'ivy nil t)
 (require 'grep)
 (require 'cl-lib)
 
@@ -86,6 +88,11 @@
 (defcustom eacl-grep-program "grep"
   "GNU Grep program."
   :type 'string
+  :group 'eacl)
+
+(defcustom eacl-git-grep-untracked t
+  "Grep untracked files in Git repository."
+  :type 'boolean
   :group 'eacl)
 
 (defcustom eacl-project-root nil
@@ -123,6 +130,13 @@ The callback is expected to return the path of project root."
 (defun eacl-get-project-root ()
   "Get project root."
   (or eacl-project-root
+      ;; use projectile to find project root
+      (and (fboundp 'projectile-find-file)
+           (if (featurep 'projectile) t (require 'projectile))
+           (projectile-project-root))
+      ;; use find-file-in-project to find project root
+      (and (fboundp 'ffip-project-root) (ffip-project-root))
+      ;; find project root manually
       (cl-some (apply-partially 'locate-dominating-file
                                 default-directory)
                eacl-project-file)))
@@ -253,25 +267,29 @@ Candidates same as KEYWORD in current file is excluded."
   "Return a shell command searching for SEARCH-REGEX.
 If MULTILINE-P is t, command is for multiline matching."
   (let* ((git-p (and (buffer-file-name)
-                     (eacl-git-p (buffer-file-name)))))
+                     (eacl-git-p (buffer-file-name))))
+         (git-grep-opts (concat "-I --no-color"
+                                (if eacl-git-grep-untracked " --untracked"))))
     ;; (setq git-p nil) ; debug
     (cond
      (multiline-p
       (cond
        (git-p
-        (format "git grep -nI --untracked \"%s\"" search-regex))
+        (format "git grep -n %s \"%s\"" git-grep-opts search-regex))
        (t
         (format "%s -rsnI %s -- \"%s\" ."
                 eacl-grep-program
                 (eacl-grep-exclude-opts)
                 search-regex))))
+
      ;; git-grep does not support multiline searches.
      ((and (buffer-file-name) (eacl-git-p (buffer-file-name)))
-      (format "git grep -h --untracked \"%s\"" search-regex))
+      (format "git grep -h %s \"%s\"" git-grep-opts search-regex))
+
      (t
       (cond
        (git-p
-        (format "git grep -h --untracked \"%s\"" search-regex))
+        (format "git grep -h %s \"%s\"" git-grep-opts search-regex))
        (t
         (format "%s -rshI %s -- \"%s\" ."
                 eacl-grep-program
@@ -289,6 +307,8 @@ EXTRA is optional information to filter candidates."
                                        (eacl-clean-candidates orig-collection))))
          (line-end (line-end-position))
          (time (current-time)))
+
+    (if eacl-debug (message "cmd=%s" cmd))
 
     (cond
      ((or (not collection) (= 0 (length collection)))
@@ -308,11 +328,33 @@ EXTRA is optional information to filter candidates."
   "Get line beginning position."
   (save-excursion (back-to-indentation) (point)))
 
+(defun eacl-ensure-no-region-selected ()
+  "If region is selected, delete text out of selected region."
+  (when (region-active-p)
+    (let* ((b (region-beginning))
+           (e (region-end)))
+      ;; delete text outside of selected region
+      (cond
+       ((or (< b (line-beginning-position))
+            (< (line-end-position) e))
+        (error "Please select region inside current line."))
+       (t
+        (delete-region e (line-end-position))
+        (delete-region (line-beginning-position) b)))
+
+      ;; de-select region and move focus to region end
+      (when (and (boundp 'evil-mode) (eq evil-state 'visual))
+        (evil-exit-visual-state)
+        (evil-insert-state))
+      (goto-char (line-end-position)))))
+
 ;;;###autoload
 (defun eacl-complete-line ()
   "Complete line by grepping project.
+The selected region will replace current line first.
 The text from line beginning to current point is used as grep keyword.
 Whitespace in the keyword could match any characters."
+  (eacl-ensure-no-region-selected)
   (interactive)
   (let* ((cur-line-info (eacl-current-line-info))
          (cur-line (car cur-line-info))
@@ -327,8 +369,9 @@ Whitespace in the keyword could match any characters."
      (if rlt (line-end-position))))
 
 (defun eacl-html-p ()
-  (or (memq major-mode '(web-mode rjsx-mode xml-mode))
-      (derived-mode-p '(sgml-mode))))
+  "Is html related mode."
+  (or (memq major-mode '(web-mode rjsx-mode xml-mode js2-jsx-mode))
+      (derived-mode-p 'sgml-mode)))
 
 (defmacro eacl-match-html-start-tag-p (line html-p)
   "LINE is like '>'."
@@ -378,10 +421,12 @@ Return (cons multiline-text end-line-text) or nil."
 
 ;;;###autoload
 (defun eacl-complete-multiline ()
-  "Complete multiline code or html tag.
+  "Complete multi-line code or html tag.
+The selected region will replace current line first.
 The text from line beginning to current point is used as grep keyword.
 Whitespace in keyword could match any characters."
   (interactive)
+  (eacl-ensure-no-region-selected)
   (let* ((orig-linenum (count-lines 1 (point)))
          (orig-file (and buffer-file-name (file-truename buffer-file-name)))
          (eacl-keyword-start (eacl-line-beginning-position))
