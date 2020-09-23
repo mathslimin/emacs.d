@@ -9,7 +9,7 @@
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/pkg-info-20150517.1143")
 (require 'pkg-info)
 ;flycheck
-(add-to-list 'load-path "~/.emacs.d/projs/myelpa/flycheck-20200909-31")
+(add-to-list 'load-path "~/.emacs.d/projs/myelpa/flycheck-20200820.1403")
 (require 'flycheck)
 (setq-default flycheck-temp-prefix ".")
 (setq flycheck-eslintrc "~/.emacs.d/js/eslintrc")
