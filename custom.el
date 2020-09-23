@@ -3,14 +3,24 @@
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/go-mode/go-mode.el")
 (autoload 'go-mode "go-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode))
+;pkg-info
+(add-to-list 'load-path "~/.emacs.d/projs/myelpa/epl-20180205.2049")
+(require 'epl)
+(add-to-list 'load-path "~/.emacs.d/projs/myelpa/pkg-info-20150517.1143")
+(require 'pkg-info)
 ;flycheck
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/flycheck-20200909-31")
 (require 'flycheck)
-(add-hook 'after-init-hook #'global-flycheck-mode)
+(setq-default flycheck-temp-prefix ".")
+(setq flycheck-eslintrc "~/.emacs.d/js/eslintrc")
 ;; Enable eslint checker for web-mode
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-mode 'javascript-eslint 'js-mode)
+(flycheck-add-mode 'javascript-eslint 'js2-mode)
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 (flycheck-add-mode 'javascript-eslint 'rjsx-mode)
 (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+(add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;prettier-js
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/prettier-js-20180109.726")
