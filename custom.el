@@ -96,3 +96,15 @@ lsp-on-touch-time) 120) ;; 2 mins
 (apply orig-fun args)))
 (advice-add 'lsp-on-change :around #'my-lsp-on-change-hack))
 ;lsp-mode end
+
+;increase the interal of check
+(with-eval-after-load 'wucuo
+;; 4 second
+(setq wucuo-update-interval 400))
+(with-eval-after-load 'lazyflymake
+;; 2 seconds
+(setq lazyflymake-update-interval 300))
+
+;disable warning
+(setq warning-minimum-level :emergency)
+
