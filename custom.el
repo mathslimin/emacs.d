@@ -30,19 +30,18 @@
 
 ;indent setting
 (setq-default indent-tabs-mode nil)
-(setq tab-width 4) ; or any other preferred value
-(defvaralias 'c-basic-offset 'tab-width)
-(defvaralias 'cperl-indent-level 'tab-width)
-(defvaralias 'coffee-tab-width 'tab-width)
-(defvaralias 'javascript-indent-level 'tab-width)
-(defvaralias 'typescript-indent-level 'tab-width)
-(defvaralias 'js-indent-level 'tab-width)
-(defvaralias 'js2-indent-level 'tab-width)
-(defvaralias 'web-mode-markup-indent-offset 'tab-width)
-(defvaralias 'web-mode-css-indent-offset 'tab-width)
-(defvaralias 'web-mode-code-indent-offset 'tab-width)
-(defvaralias 'css-indent-offset 'tab-width)
-(defvaralias 'sgml-basic-offset 'tab-width)
+(setq-default c-basic-offset 4)
+(setq-default cperl-indent-level 4)
+(setq-default coffee-tab-width 4)
+(setq-default javascript-indent-level 4)
+(setq-default typescript-indent-level 4)
+(setq-default js-indent-level 4)
+(setq-default js2-indent-level 4)
+(setq-default web-mode-markup-indent-offset 4)
+(setq-default web-mode-css-indent-offset 4)
+(setq-default web-mode-code-indent-offset 4)
+(setq-default css-indent-offset 4)
+(setq-default sgml-basic-offset 4)
 
 ;(load-theme 'granger t)
 ;(load-theme 'molokai t)
@@ -106,5 +105,5 @@ lsp-on-touch-time) 120) ;; 2 mins
 (setq lazyflymake-update-interval 300))
 
 ;disable warning
-(setq warning-minimum-level :emergency)
+;(setq warning-minimum-level :emergency)
 
