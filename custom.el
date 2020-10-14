@@ -21,7 +21,7 @@
 ;; Godef jump key binding
 ;(local-set-key (kbd "M-,") 'godef-jump)
 ;(local-set-key (kbd "M-.") 'pop-tag-mark)
-(global-set-key (kbd "C-<f11>") 'pop-tag-mark)
+(global-set-key (kbd "C-c C-b") 'pop-tag-mark)
 (go-guru-hl-identifier-mode)
 ;pkg-info
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/epl-20180205.2049")
