@@ -4,7 +4,6 @@
 (autoload 'go-mode "go-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode))
 (require 'go-guru)
-(add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook '(lambda ()
                (local-set-key (kbd "C-c C-r") 'go-remove-unused-imports)))
 (add-hook 'go-mode-hook '(lambda ()
@@ -13,7 +12,9 @@
                (local-set-key (kbd "C-c C-f") 'gofmt)))
 (add-hook 'go-mode-hook '(lambda ()
                (local-set-key (kbd "C-c C-k") 'godoc)))
-(add-hook 'before-save-hook 'gofmt-before-save)
+;(add-hook 'go-mode-hook 'lsp-deferred)
+;gofmt before save
+;(add-hook 'before-save-hook 'gofmt-before-save)
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/auto-complete-20201011.1341/")
 (require 'auto-complete)
 (add-to-list 'load-path "~/.emacs.d/projs/myelpa/gocode/")
@@ -51,6 +52,7 @@
 (add-hook 'web-mode-hook 'prettier-js-mode)
 
 ;indent setting
+(setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
 (setq-default c-basic-offset 4)
 (setq-default cperl-indent-level 4)
@@ -126,6 +128,20 @@ lsp-on-touch-time) 120) ;; 2 mins
 ;; 2 seconds
 (setq lazyflymake-update-interval 300))
 
-;disable warning
-;(setq warning-minimum-level :emergency)
-
+(add-to-list 'load-path "~/.emacs.d/projs/myelpa/language-id-20200929.1339/")
+(require 'language-id)
+(add-to-list 'load-path "~/.emacs.d/projs/myelpa/format-all-20201016.1041/")
+(require 'format-all)
+;(format-all-mode)
+(add-hook 'java-mode-hook (lambda ()
+  (format-all-mode)
+))
+(add-hook 'go-mode-hook (lambda ()
+  (format-all-mode)
+))
+(add-hook 'c++-mode-hook (lambda ()
+  (format-all-mode)
+))
+(add-hook 'c-mode-hook (lambda ()
+  (format-all-mode)
+))
