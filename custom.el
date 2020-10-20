@@ -70,7 +70,8 @@
 ;(load-theme 'granger t)
 ;(load-theme 'molokai t)
 ;(load-theme 'spacemacs-dark t)
-(load-theme 'vscode-dark-plus t)
+;(load-theme 'vscode-dark-plus t)
+(load-theme 'moe-dark t)
 (add-auto-mode 'rjsx-mode "\\.jsx\\'")
 (add-auto-mode 'rjsx-mode "\\.js\\'")
 (add-auto-mode 'web-mode "\\.tsx\\'")
@@ -145,3 +146,4 @@ lsp-on-touch-time) 120) ;; 2 mins
 (add-hook 'c-mode-hook (lambda ()
   (format-all-mode)
 ))
+
